@@ -196,14 +196,6 @@ async def remove_perms(ctx):
         await debug_msg(ctx, f'Removed command usage from roles {[r.name for r in roles]}')
 
 
-# TODO: Come up with something better than this
-@command(name='get-config')
-@requires_perms(owner=True)
-async def get_config(ctx):
-    """ Only server owner can use. Send config.json file (temporary). """
-    await ctx.send(file=discord.File(config.path))
-
-
 @command(name='reset-server')
 @requires_perms(owner=True)
 async def reset_server(ctx, server_id=None):
