@@ -36,16 +36,13 @@ TEMPLATE = {
 
 
 class BotConfig:
-    _PATH = os.path.join(os.path.dirname(__file__), '../config.json')
-
+    path: str
     data = {}  # shared by all instances
     loaded = False
 
-    @property
-    def path(self):
-        return self._PATH
+    def load(self, path: str, guilds=()):
+        self.path = os.path.join(os.path.dirname(__file__),  f'..{path}')
 
-    def load(self, bot):
         if not os.path.isfile(self.path):
             open(self.path, 'x').close()
         else:
@@ -54,8 +51,9 @@ class BotConfig:
             for k, v in configjson.items():
                 self.data[int(k)] = DotDict(v)
 
-        for guild in bot.guilds:
+        for guild in guilds:
             self.data.setdefault(guild.id, DotDict(TEMPLATE))
+
         self.update()
         self.loaded = True
 

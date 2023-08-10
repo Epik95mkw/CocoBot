@@ -11,6 +11,7 @@ from components import functions as f
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
+CONFIGPATH = os.getenv('CONFIGPATH')
 
 bot = commands.Bot(
     command_prefix='\\',
@@ -21,12 +22,13 @@ bot = commands.Bot(
 
 @bot.event
 async def on_ready():
-    config.load(bot)
+    guilds = list(bot.guilds)
+    config.load(CONFIGPATH, guilds)
+
     await bot.load_extension('components.commands')
     await bot.add_cog(Listeners(bot))
     await bot.add_cog(ScheduledFunctions(bot))
 
-    guilds = list(bot.guilds)
     await f.update_maps(guilds)
     await f.check_new_patch(guilds)
     await f.update_gear(guilds)
