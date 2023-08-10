@@ -14,7 +14,7 @@ class ScheduledFunctions(commands.Cog):
         self.on_map_rotation.cancel()
         self.check_patch.cancel()
 
-    @tasks.loop(time=[datetime.time(hour=t, second=30) for t in range(0, 24, 1)])
+    @tasks.loop(time=[datetime.time(hour=t, second=30) for t in range(0, 24, 2)])
     async def on_map_rotation(self):
         await f.update_maps(list(self.bot.guilds))
         await f.update_gear(list(self.bot.guilds))
