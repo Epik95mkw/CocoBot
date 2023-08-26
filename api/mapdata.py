@@ -229,6 +229,9 @@ def get_challenges(data: DotDict) -> PagerInfo:
             setting = node.leagueMatchSetting
             suffix = '(Open Now!)' if is_ongoing else '(Upcoming)'
 
+            if not setting.leagueMatchEvent.regulation:  # if event is unknown
+                continue
+
             if is_ongoing and len(timeslots) == 3:  # only triggers for first timeslot
                 announcement = AnnounceInfo(
                     f'The {setting.leagueMatchEvent.name} event is now open.',
