@@ -1,3 +1,5 @@
+import sys
+
 import requests
 from attr import dataclass
 
@@ -42,8 +44,8 @@ def updated_footer() -> dict:
 def error_page() -> dict:
     """ Return error page with given title """
     return {
-        'title': '',
-        'fields': [{'value': '\n*Error: Unrecognized data*\n'}],
+        'title': 'Error',
+        'fields': [{'value': '\n*Unrecognized data*\n'}],
         'footer': updated_footer()
     }
 
@@ -144,9 +146,9 @@ def get_main_maps(data: DotDict) -> PagerInfo:
                     'color': 0x16A80C
                 })
 
-        except (TypeError, IndexError, KeyError) as e:
+        except Exception as e:
             pages.append(error_page())
-            print(e)
+            print(e, file=sys.stderr)
 
     return PagerInfo(pages, announcement)
 
@@ -198,9 +200,9 @@ def get_sr_shifts(data: DotDict) -> PagerInfo:
                 'color': 0xC54B22
             })
 
-        except (TypeError, IndexError, KeyError) as e:
+        except Exception as e:
             pages.append(error_page())
-            print(e)
+            print(e, file=sys.stderr)
 
     return PagerInfo(pages, announcement)
 
@@ -256,9 +258,9 @@ def get_challenges(data: DotDict) -> PagerInfo:
                 'color': 0xD60E6E
             })
 
-        except (TypeError, IndexError, KeyError) as e:
+        except Exception as e:
             pages.append(error_page())
-            print(e)
+            print(e, file=sys.stderr)
 
     return PagerInfo(pages, announcement)
 
@@ -302,9 +304,9 @@ def get_eggstra_shifts(data: DotDict) -> PagerInfo:
                 'color': 0xD8C100
             })
 
-        except (TypeError, IndexError, KeyError) as e:
+        except Exception as e:
             pages.append(error_page())
-            print(e)
+            print(e, file=sys.stderr)
 
     return PagerInfo(pages, announcement)
 
