@@ -1,4 +1,5 @@
 import discord
+from time import sleep
 
 from api import mapdata, patchnotes, shopdata
 from components.config import config
@@ -60,12 +61,14 @@ async def update_maps(guilds: list[discord.Guild]):
         for mode, info in embeds.items():
             if not info.pages:
                 await delete_map_embed(guild, mode)
+                sleep(0.1)
                 continue
 
             if (a := info.announcement) is not None:
                 await announcement(guild, a.role_key, a.message)
 
             await update_map_embed(guild, mode, info.pages)
+            sleep(0.1)
 
     config.update()
 
@@ -143,5 +146,6 @@ async def update_gear(guilds: list[discord.Guild]):
         except (discord.NotFound, discord.HTTPException):
             message = await channel.send(embed=embed)
             config[guild.id].embeds.gear.msg_id = message.id
+        sleep(0.1)
 
     config.update()
