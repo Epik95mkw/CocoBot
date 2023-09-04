@@ -59,14 +59,10 @@ def empty_embed(title) -> PagerInfo:
     }])
 
 
-'''
-Idea: For events that replace other modes (splatfest & big run), include them in main message embed. For
-optional side events (challenges and eggstra work), have temporary separate embed for their schedules
-'''
-
-
 def get_main_maps(data: DotDict) -> PagerInfo:
     """ Returns main 4v4 map data as a list of dicts formatted as Discord embeds. """
+    if not data.regularSchedules.nodes:
+        return empty_embed('Map Schedule')
     pages = []
     announcement = None
 
@@ -74,6 +70,8 @@ def get_main_maps(data: DotDict) -> PagerInfo:
         try:
             start = time.convert_dt(node.startTime)
             end = time.convert_dt(node.endTime)
+            if end < time.now():
+                continue
             suffix = '(Current)' if i == 0 else '(Next)' if i == 1 else ''
 
             festmaps = data.festSchedules.nodes[i].festMatchSetting
@@ -155,11 +153,13 @@ def get_main_maps(data: DotDict) -> PagerInfo:
 
 def get_sr_shifts(data: DotDict) -> PagerInfo:
     """ Returns salmon run shift data as a list of dicts formatted as Discord embeds. """
-    pages = []
-    announcement = None
     allruns = \
         data.coopGroupingSchedule.regularSchedules.nodes + \
         data.coopGroupingSchedule.bigRunSchedules.nodes
+    if not allruns:
+        return empty_embed('Salmon Run Schedule')
+    pages = []
+    announcement = None
 
     allruns.sort(key=lambda x: time.convert_dt(x.startTime))
 
@@ -167,6 +167,8 @@ def get_sr_shifts(data: DotDict) -> PagerInfo:
         try:
             start = time.convert_dt(node.startTime)
             end = time.convert_dt(node.endTime)
+            if end < time.now():
+                continue
             is_bigrun = node.setting.__typename == 'CoopBigRunSetting'
 
             suffix = '(Current)' if i == 0 else '(Next)' if i == 1 else ''

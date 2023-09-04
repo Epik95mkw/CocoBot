@@ -1,3 +1,5 @@
+import sys
+
 import requests
 
 from utils.dotdict import DotDict
@@ -30,48 +32,22 @@ def error_page() -> dict:
     }
 
 
-# def get_daily_gear(data: DotDict) -> dict:
-#     """ Return SplatNet daily drop data formatted as a Discord embed """
-#     try:
-#         daily = data.gesotown.pickupBrand
-#         fields = [{
-#             'name': daily.brand.name,
-#             'value': f'Favored ability:  {daily.brand.usualGearPower.name}\n'
-#                      f'Sale ends in <t:{time.convert_dt(daily.saleEndTime)}:R>',
-#             'inline': False
-#         }]
-#         for item in daily.brandGears:
-#             fields.append({
-#                 'name': item.gear.name,
-#                 'value': f'> Ability:  {item.gear.primaryGearPower.name}\n'
-#                          f'> Sub Slots:  {len(item.gear.additionalGearPowers)}\n'
-#                          f'> Price:  {item.price}',
-#                 'inline': True
-#             })
-#
-#         return {
-#             'title': 'Daily Drop',
-#             'fields': fields,
-#             'footer': updated_footer(),
-#         }
-#     except (TypeError, IndexError, KeyError) as e:
-#         print(e)
-#         return error_page()
-
-
 def formatted(data: DotDict) -> dict:
     """ Return SplatNet gear data formatted as a Discord embed """
     fields = []
     try:
         all_gear = data.gesotown.pickupBrand.brandGears + data.gesotown.limitedGears
         for item in all_gear:
+            end = time.convert_dt(item.saleEndTime)
+            if end < time.now():
+                continue
             fields.append({
                 'name': item.gear.name,
                 'value': f'Brand:  {item.gear.brand.name}\n'
                          f'Ability:  {item.gear.primaryGearPower.name}\n'
                          f'Sub Slots:  {len(item.gear.additionalGearPowers)}\n'
                          f'Price:  {item.price}\n'
-                         f'Sale ends <t:{time.convert_dt(item.saleEndTime)}:R>',
+                         f'Sale ends <t:{end}:R>',
                 'inline': True
             })
         return {
@@ -79,6 +55,6 @@ def formatted(data: DotDict) -> dict:
             'fields': fields,
             'footer': updated_footer(),
         }
-    except (TypeError, IndexError, KeyError) as e:
-        print(e)
+    except Exception as e:
+        print(e, file=sys.stderr)
         return error_page()
