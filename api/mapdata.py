@@ -74,10 +74,9 @@ def get_main_maps(data: DotDict) -> PagerInfo:
                 continue
             suffix = '(Current)' if i == 0 else '(Next)' if i == 1 else ''
 
-            festmaps = data.festSchedules.nodes[i].festMatchSetting
+            festmaps = data.festSchedules.nodes[i].festMatchSettings
 
             if festmaps is not None:
-
                 if can_announce(time.convert_dt(data.currentFest.startTime)):
                     announcement = AnnounceInfo(
                         f'Splatfest has started! {data.currentFest.title}'
@@ -94,8 +93,13 @@ def get_main_maps(data: DotDict) -> PagerInfo:
                              f'<t:{start}:D> <t:{start}:t> - <t:{end}:t>',
                     'fields': [
                         {
-                            'name': f'Turf War',
-                            'value': '\n'.join([f'> {stage.name}' for stage in festmaps.vsStages]),
+                            'name': f'Turf War (Pro)',
+                            'value': '\n'.join([f'> {stage.name}' for stage in festmaps[0].vsStages]),
+                            'inline': False
+                        },
+                        {
+                            'name': f'Turf War (Regular)',
+                            'value': '\n'.join([f'> {stage.name}' for stage in festmaps[1].vsStages]),
                             'inline': False
                         },
                     ] + ([
