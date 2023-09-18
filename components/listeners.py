@@ -23,8 +23,9 @@ class Listeners(Cog):
     # TODO: debug message if react role deleted
     @Cog.listener()
     async def on_raw_message_delete(self, ev):
-        updated = [x for x in config[ev.guild_id].reactions if x.msg_id == ev.message_id]
-        if updated:
+        reactions = config[ev.guild_id].reactions
+        updated = [x for x in reactions if x.msg_id != ev.message_id]
+        if updated != reactions:
             config[ev.guild_id].reactions = updated
             config.update()
 
