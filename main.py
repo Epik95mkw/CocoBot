@@ -66,7 +66,7 @@ async def set_config(ctx):
         return
     await ctx.send(content='Old config:', file=discord.File(config.path))
     await ctx.message.attachments[0].save(fp=config.path)
-    config.load(config.path)
+    config.load(CONFIGPATH)
     await ctx.send('Successfully updated config')
 
 
