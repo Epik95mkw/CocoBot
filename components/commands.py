@@ -21,13 +21,13 @@ async def help_command(ctx):
     }))
 
 
-@command(name='randomweapon')
+@command(name='randomweapon', aliases=['rw'])
 async def random_weapon(ctx, *args: str):
     result = weapondata.get_random(args)
     if result is None:
         await ctx.send('Failed to find weapon with this property')
     else:
-        await ctx.send(result)
+        await ctx.send(result, reference=ctx.message, mention_author=False)
 
 
 @command(name='set-debug-channel')
