@@ -19,15 +19,16 @@ def latest():
 
     updateline = ''
     for i, line in enumerate(html.splitlines()):
-        if '<section class="update-versions">' in line:
-            updateline = html.splitlines()[i+1].strip()
+        if 'Latest update:' in line:
+            updateline = line
             break
 
     if not updateline:
         return None, None
 
-    s = len('<h3><a name=\"')
-    e = len(updateline) - len('</a></h3>')
-    vnum = updateline[s:s+4]
-    vtext = updateline[s+6:e]
+    s = updateline.find(':') + 2
+    e = updateline.rfind('<')
+    vtext = updateline[s:e]
+    vnum = vtext.split(' ')[1]
+
     return vnum, vtext

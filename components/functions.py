@@ -120,7 +120,7 @@ async def check_new_patch(guilds: list[discord.Guild]):
 
         channel = guild.get_channel(cfg.ch_id)
         content = f'{guild.default_role} New patch notes: {vtext}\n' \
-                  f'{patchnotes.URL}#{vnum}'
+                  f'{patchnotes.URL}'
         await channel.send(content)
 
         config[guild.id].channels.patch.last = vnum
