@@ -19,6 +19,6 @@ class ScheduledFunctions(commands.Cog):
         await f.update_maps(list(self.bot.guilds))
         await f.update_gear(list(self.bot.guilds))
 
-    @tasks.loop(time=[datetime.time(hour=t, minute=m, second=30) for m in range(2, 12, 2) for t in range(0, 24, 1)])
+    @tasks.loop(time=[datetime.time(hour=t, minute=m, second=30) for m in range(0, 60, 5) for t in range(18, 22, 1)])
     async def check_patch(self):
         await f.check_new_patch(list(self.bot.guilds))
