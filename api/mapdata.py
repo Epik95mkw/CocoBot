@@ -222,6 +222,7 @@ def get_challenges(data: DotDict) -> PagerInfo:
         return empty_embed('Challenge Schedule')
     pages = []
     announcement = None
+    first_slot_start = None
 
     for i, node in enumerate(data.eventSchedules.nodes):
         try:
@@ -230,6 +231,8 @@ def get_challenges(data: DotDict) -> PagerInfo:
             for t in node.timePeriods:
                 start = time.convert_dt(t.startTime)
                 end = time.convert_dt(t.endTime)
+                if first_slot_start is None:
+                    first_slot_start = t
                 if end < time.now():
                     continue
                 is_ongoing = is_ongoing or start <= time.now()
@@ -241,7 +244,7 @@ def get_challenges(data: DotDict) -> PagerInfo:
             if not setting.leagueMatchEvent.regulation:  # if event is unknown
                 continue
 
-            if is_ongoing and len(timeslots) == 3:  # only triggers for first timeslot
+            if is_ongoing and can_announce(first_slot_start):
                 announcement = AnnounceInfo(
                     f'The {setting.leagueMatchEvent.name} event is now open.',
                     role_key=Mode.MAIN
