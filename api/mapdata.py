@@ -54,7 +54,10 @@ def empty_embed(title) -> PagerInfo:
     """ Return empty embed with given title """
     return PagerInfo([{
         'title': title,
-        'fields': [{'value': '\n*No Data*\n'}],
+        'fields': [{
+            'name': '',
+            'value': '\n*No Data*\n'
+        }],
         'footer': updated_footer()
     }])
 
