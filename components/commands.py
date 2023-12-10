@@ -30,6 +30,17 @@ async def random_weapon(ctx, *args: str):
         await ctx.send(result, reference=ctx.message, mention_author=False)
 
 
+@command(name='update-weapons')
+@requires_perms(owner=False)
+async def update_weapons(ctx):
+    newdata = weapondata.scrape_wiki_page()
+    if weapondata.data != newdata:
+        weapondata.data = newdata
+        await debug_msg(ctx, 'Successfully updated weapon data')
+    else:
+        await debug_msg(ctx, 'No new data found')
+
+
 @command(name='set-debug-channel')
 @requires_perms(owner=False)
 async def set_debug_channel(ctx):
