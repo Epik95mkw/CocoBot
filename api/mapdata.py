@@ -204,6 +204,11 @@ def get_sr_shifts(data: DotDict) -> PagerInfo:
                         'value': '\n'.join([f'> {w.name}' for w in node.setting.weapons]),
                         'inline': False
                     },
+                    {
+                        'name': 'Boss',
+                        'value': f'> {node.setting.boss.name}\n',
+                        'inline': False
+                    },
                 ],
                 'footer': updated_footer(),
                 'color': 0xC54B22
