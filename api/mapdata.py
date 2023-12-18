@@ -237,7 +237,7 @@ def get_challenges(data: DotDict) -> PagerInfo:
                 start = time.convert_dt(t.startTime)
                 end = time.convert_dt(t.endTime)
                 if first_slot_start is None:
-                    first_slot_start = t
+                    first_slot_start = start
                 if end < time.now():
                     continue
                 is_ongoing = is_ongoing or start <= time.now()
