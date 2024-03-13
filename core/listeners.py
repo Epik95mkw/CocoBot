@@ -1,5 +1,5 @@
 from discord.ext.commands import Cog
-from components.config import config
+from core.config import config
 
 
 class Listeners(Cog):

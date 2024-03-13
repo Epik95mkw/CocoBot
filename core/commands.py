@@ -2,9 +2,9 @@ import discord
 from discord.ext.commands import command
 from discord.ext.commands.core import Command
 
-from components.functions import requires_perms, debug_msg
+from core.functions import requires_perms, debug_msg
 from api import mapdata, patchnotes, shopdata, weapondata
-from components.config import config, Mode
+from core.config import config, Mode
 from utils.dotdict import DotDict
 
 

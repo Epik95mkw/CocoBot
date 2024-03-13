@@ -2,7 +2,7 @@ import discord
 from time import sleep
 
 from api import mapdata, patchnotes, shopdata
-from components.config import config
+from core.config import config
 from utils.paginator import Paginator
 
 

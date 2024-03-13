@@ -1,7 +1,7 @@
 import datetime
 from discord.ext import commands, tasks
 
-from components import functions as f
+from core import functions as f
 
 
 class ScheduledFunctions(commands.Cog):

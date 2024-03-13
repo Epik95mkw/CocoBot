@@ -3,7 +3,7 @@ import sys
 import requests
 from attr import dataclass
 
-from components.config import Mode
+from core.config import Mode
 from utils.dotdict import DotDict
 import utils.time as time
 
