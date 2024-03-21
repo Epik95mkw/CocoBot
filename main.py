@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 import discord
 from discord.ext import commands
 
+from core.commands import Commands
 from core.listeners import Listeners
 from core.scheduled import ScheduledFunctions
 from core.config import config
@@ -26,7 +27,7 @@ async def on_ready():
     guilds = list(bot.guilds)
     config.load(CONFIGPATH, guilds)
 
-    await bot.load_extension('core.commands')
+    await bot.add_cog(Commands(bot))
     await bot.add_cog(Listeners(bot))
     await bot.add_cog(ScheduledFunctions(bot))
 
