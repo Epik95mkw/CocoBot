@@ -13,7 +13,6 @@ from core import functions as f
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
 CONFIGPATH = os.getenv('CONFIGPATH')
-DEV = int(os.getenv('DEV'))
 
 bot = commands.Bot(
     command_prefix='\\',
@@ -50,18 +49,16 @@ async def on_command_error(ctx, error):
 
 
 @bot.command(name='get-config')
+@commands.is_owner()
 async def get_config(ctx):
     """ Only bot owner can use. Send config.json file for debugging. """
-    if ctx.author.id != DEV:
-        return
     await ctx.send(file=discord.File(config.path))
 
 
 @bot.command(name='set-config')
+@commands.is_owner()
 async def set_config(ctx):
     """ Only bot owner can use. Overwrite config.json with given file. """
-    if ctx.author.id != DEV:
-        return
     if not ctx.message.attachments:
         await ctx.send('Missing attachment')
         return
