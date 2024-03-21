@@ -1,5 +1,6 @@
 import discord
-from discord.ext.commands import command, Command, Cog, Bot
+from discord.ext import commands
+from discord.ext.commands import command
 
 from core.functions import requires_perms, debug_msg
 from api import mapdata, patchnotes, shopdata, weapondata
@@ -7,8 +8,8 @@ from core.config import config, Mode
 from utils.dotdict import DotDict
 
 
-class Commands(Cog):
-    def __init__(self, _bot: Bot):
+class Commands(commands.Cog):
+    def __init__(self, _bot: commands.Bot):
         self.bot = _bot
 
 
@@ -20,7 +21,7 @@ class Commands(Cog):
             'title': 'Commands',
             'fields': [{
                 'name': '',
-                'value': '\n'.join([v.name for v in globals().values() if isinstance(v, Command)])
+                'value': '\n'.join([v.name for v in globals().values() if isinstance(v, commands.Command)])
             }]
         }))
 
