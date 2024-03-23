@@ -6,30 +6,13 @@ from core.config import config
 from utils.paginator import Paginator
 
 
-def requires_perms(owner=False):
-    """ Decorator that restricts command usage to guild owner and roles with permission. """
-    def decorator(cmd):
-        async def wrapper(ctx, *args, **kwargs):
-            is_owner = (ctx.message.author == ctx.guild.owner)
-            perm_role = discord.utils.find(
-                lambda role: role.id in config[ctx.guild.id].perms, ctx.message.author.roles
-            )
-            if is_owner or (not owner and perm_role is not None):
-                result = await cmd(ctx, *args, **kwargs)
-            else:
-                result = None
-            return result
-        return wrapper
-    return decorator
-
-
-async def debug_msg(ctx, content):
+async def debug_msg(guild: discord.Guild, content: str):
     """ Send message in debug channel if specified, otherwise send through ctx. """
-    if config and (debug := config[ctx.guild.id].channels.debug):
-        debug_ch = ctx.guild.get_channel(debug)
+    if config and (debug := config[guild.id].channels.debug):
+        debug_ch = guild.get_channel(debug)
         await debug_ch.send(content)
-    else:
-        await ctx.send(content)
+    elif guild.system_channel is not None:
+        await guild.system_channel.send(content)
 
 
 async def announcement(guild, role_key, content):

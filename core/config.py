@@ -1,5 +1,6 @@
 import os
 import json
+from typing import List
 
 from utils.dotdict import DotDict
 
@@ -62,6 +63,10 @@ class BotConfig:
 
     def __getitem__(self, key: int):
         return self.data[key]
+
+    @property
+    def guild_ids(self) -> List[int]:
+        return list(self.data.keys())
 
     def update(self):
         as_dict = self.data  # {gid: gcfg.data for gid, gcfg in self.data}
