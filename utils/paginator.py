@@ -9,8 +9,8 @@ class Paginator(discord.ui.View):
         self.message = None
         self.pages = pages
 
-    async def send(self, ctx):
-        self.message = await ctx.send(view=self)
+    async def send(self, channel: discord.TextChannel):
+        self.message = await channel.send(view=self)
         await self.update_message()
 
     async def update_message(self, message=None):

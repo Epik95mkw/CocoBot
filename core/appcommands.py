@@ -6,6 +6,7 @@ from discord.app_commands import command as slash_command
 from api import mapdata, patchnotes, shopdata, weapondata
 from core.config import config, Mode
 from utils.dotdict import DotDict
+from utils.paginator import Paginator
 
 
 @app_commands.guilds(*config.guild_ids)
@@ -71,10 +72,9 @@ class AppCommands(commands.GroupCog, group_name='admin'):
     @slash_command(name='set-maps-channel')
     async def set_maps_channel(self, interaction):
         """ Set map rotation embed to this channel """
-        ctx = await self.bot.get_context(interaction)
-        await _set_embed_channel(ctx, Mode.MAIN, pager=mapdata.get_main_maps(mapdata.get()))
+        await _set_embed_channel(interaction.channel, Mode.MAIN, pagerinfo=mapdata.get_main_maps(mapdata.get()))
         await interaction.response.send_message(
-            f'Set map schedule channel to {ctx.channel.jump_url}',
+            f'Set map rotation embed channel to {interaction.channel.jump_url}',
             ephemeral=True
         )
 
@@ -82,12 +82,11 @@ class AppCommands(commands.GroupCog, group_name='admin'):
     @slash_command(name='set-sr-channel')
     async def set_sr_channel(self, interaction):
         """ Set salmon run rotation embeds to this channel """
-        ctx = await self.bot.get_context(interaction)
         data = mapdata.get()
-        await _set_embed_channel(ctx, Mode.SR, pager=mapdata.get_sr_shifts(data))
-        await _set_embed_channel(ctx, Mode.EGGSTRA, pager=mapdata.get_eggstra_shifts(data))
+        await _set_embed_channel(interaction.channel, Mode.SR, pagerinfo=mapdata.get_sr_shifts(data))
+        await _set_embed_channel(interaction.channel, Mode.EGGSTRA, pagerinfo=mapdata.get_eggstra_shifts(data))
         await interaction.response.send_message(
-            f'Set salmon run schedule channel to {ctx.channel.jump_url}',
+            f'Set salmon run embed channel to {interaction.channel.jump_url}',
             ephemeral=True
         )
 
@@ -95,10 +94,9 @@ class AppCommands(commands.GroupCog, group_name='admin'):
     @slash_command(name='set-challenge-channel')
     async def set_challenge_channel(self, interaction):
         """ Set challenge schedule embed to this channel """
-        ctx = await self.bot.get_context(interaction)
-        await _set_embed_channel(ctx, Mode.CHALLENGE, pager=mapdata.get_challenges(mapdata.get()))
+        await _set_embed_channel(interaction.channel, Mode.CHALLENGE, pagerinfo=mapdata.get_challenges(mapdata.get()))
         await interaction.response.send_message(
-            f'Set challenge schedule channel to {ctx.channel.jump_url}',
+            f'Set challenge embed channel to {interaction.channel.jump_url}',
             ephemeral=True
         )
 
@@ -106,11 +104,10 @@ class AppCommands(commands.GroupCog, group_name='admin'):
     @slash_command(name='set-gear-channel')
     async def set_gear_channel(self, interaction):
         """ Set challenge schedule embed to this channel """
-        ctx = await self.bot.get_context(interaction)
         embed = discord.Embed.from_dict(shopdata.formatted(shopdata.get()))
-        await _set_embed_channel(ctx, 'gear', embed=embed)
+        await _set_embed_channel(interaction.channel, 'gear', embed=embed)
         await interaction.response.send_message(
-            f'Set splatnet gear channel to {ctx.channel.jump_url}',
+            f'Set gear embed channel to {interaction.channel.jump_url}',
             ephemeral=True
         )
 
@@ -124,7 +121,7 @@ class AppCommands(commands.GroupCog, group_name='admin'):
         })
         config.update()
         await interaction.response.send_message(
-            f'Set splatnet gear channel to {interaction.channel.jump_url}',
+            f'Set patch announcements channel to {interaction.channel.jump_url}',
             ephemeral=True
         )
 
@@ -166,22 +163,26 @@ class AppCommands(commands.GroupCog, group_name='admin'):
 
 # HELPERS #
 
-async def _set_embed_channel(ctx, key, *, embed=None, pager=None):
+async def _set_embed_channel(channel, key, *, embed=None, pagerinfo=None):
     if embed is not None:
-        message = await ctx.send(embed=embed)
+        message = await channel.send(embed=embed)
         msg_id = message.id
-    elif pager is not None:
-        await pager.send(ctx)
+    elif pagerinfo is not None and pagerinfo.pages:
+        pager = Paginator(pagerinfo.pages)
+        await pager.send(channel)
         msg_id = pager.message.id
     else:
         msg_id = 0
 
-    if prev := config[ctx.guild.id].embeds[key]:
-        prevmsg = await ctx.guild.get_channel(prev.ch_id).fetch_message(prev.msg_id)
-        await prevmsg.delete()
+    if prev := config[channel.guild.id].embeds[key]:
+        try:
+            prevmsg = await channel.guild.get_channel(prev.ch_id).fetch_message(prev.msg_id)
+            await prevmsg.delete()
+        except discord.NotFound:
+            pass
 
-    config[ctx.guild.id].embeds[key] = DotDict({
-        "ch_id": ctx.channel.id,
+    config[channel.guild.id].embeds[key] = DotDict({
+        "ch_id": channel.id,
         "msg_id": msg_id
     })
     config.update()
