@@ -83,47 +83,16 @@ class BotConfig:
 
 
 config = BotConfig()
-
-
-'''
-Implement this later?
-'''
-# class GuildConfig:
-#
-#     def __init__(self, guild: discord.Guild, guild_data: dict):
-#         self.guild = guild
-#         self.data = guild_data
-#
-#     @property
-#     def debug_channel(self):
-#         ch_id = self.data['channels']['debug'] or 0
-#         return self.guild.get_channel(ch_id)
-#
-#     @property
-#     def announcements_channel(self):
-#         ch_id = self.data['channels']['announcements'] or 0
-#         return self.guild.get_channel(ch_id)
-#
-#     @property
-#     def patch_channel(self):
-#         patch_info = self.data['channels']['patch']
-#         ch_id = 0 if not patch_info else patch_info['ch_id']
-#         return self.guild.get_channel(ch_id)
-#
-#     def get_embed_channel(self, embed_key):
-#         return self._get_embed_info(embed_key, 'ch_id')
-#
-#     def get_embed_message(self, embed_key):
-#         return self._get_embed_info(embed_key, 'msg_id')
-#
-#     def _get_embed_info(self, embed_key, info_key):
-#         embeds = self.data['embeds']
-#         if embed_key not in embeds:
-#             raise KeyError('Invalid embed type given (use constants in BotConfig)')
-#         if not embeds[embed_key]:
-#             return None
-#         else:
-#             return self.guild.get_channel(embeds[embed_key][info_key])
-#
-#     def set_embed_info(self, mode: str, channel: discord.TextChannel, message: discord.Message):
-#         pass
+"""
+{ (GUILD ID): Template }\n
+Template:\n
+perms: [ role IDs ]\n
+roles: { main, sr, events } (role ID)\n
+channels: {\n
+. . debug, announcement, patch: { ch_id, last: str }\n
+} (channel ID)\n
+embeds: {\n
+. . main, sr, challenge, eggstra, gear\n
+} ({ ch_id, msg_id })\n
+reactions: [{ msg_id, emoji, role_id }]\n
+"""
