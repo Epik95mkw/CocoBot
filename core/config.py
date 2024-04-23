@@ -42,6 +42,7 @@ class BotConfig:
     loaded = False
 
     def load(self, path: str, guilds=()):
+        """ Loads config from specified JSON file """
         self.path = os.path.join(os.path.dirname(__file__),  f'..{path}')
 
         if not os.path.isfile(self.path):
@@ -69,6 +70,7 @@ class BotConfig:
         return list(self.data.keys())
 
     def update(self):
+        """ Write current state to JSON file """
         as_dict = self.data  # {gid: gcfg.data for gid, gcfg in self.data}
         pretty = json.dumps(as_dict, indent=2)
         with open(self.path, 'w') as f:
@@ -76,6 +78,7 @@ class BotConfig:
         return True
 
     def delete(self, guild):
+        """ Clear all data for specified guild """
         self.data[guild.id] = DotDict(TEMPLATE)
 
 
