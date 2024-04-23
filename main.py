@@ -4,6 +4,7 @@ from dotenv import load_dotenv
 
 import discord
 from discord.ext import commands
+from discord.ext.commands.errors import CommandNotFound, NotOwner
 
 from core.commands import Commands
 from core.appcommands import AppCommands
@@ -41,10 +42,11 @@ async def on_ready():
 
 
 @bot.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.errors.CommandNotFound):
+async def on_command_error(ctx: commands.Context, error):
+    if isinstance(error, (CommandNotFound, NotOwner)):
         return
-    await ctx.interaction.response.send_message(f'{error}', ephemeral=True)
+    if debug_id := config[ctx.guild.id].channels.debug:
+        await ctx.guild.get_channel(debug_id).send(f'{error}')
     raise error
 
 
