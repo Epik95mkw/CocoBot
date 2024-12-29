@@ -27,7 +27,7 @@ def error_page() -> dict:
     """ Return error page with given title """
     return {
         'title': '',
-        'fields': [{'value': '\n*Error: Unrecognized data*\n'}],
+        'fields': [{'name': '', 'value': '\n*Error: Unrecognized data*\n'}],
         'footer': updated_footer()
     }
 
@@ -52,7 +52,7 @@ def formatted(data: DotDict) -> dict:
             })
         return {
             'title': 'SplatNet Gear',
-            'fields': fields,
+            'fields': fields or [{'name': '', 'value': '\n*No data available*\n'}],
             'footer': updated_footer(),
         }
     except Exception as e:

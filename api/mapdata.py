@@ -45,7 +45,7 @@ def error_page() -> dict:
     """ Return error page with given title """
     return {
         'title': 'Error',
-        'fields': [{'value': '\n*Unrecognized data*\n'}],
+        'fields': [{'name': '', 'value': '\n*Unrecognized data*\n'}],
         'footer': updated_footer()
     }
 
@@ -56,7 +56,7 @@ def empty_embed(title) -> PagerInfo:
         'title': title,
         'fields': [{
             'name': '',
-            'value': '\n*No Data*\n'
+            'value': '\n*No data available*\n'
         }],
         'footer': updated_footer()
     }])
@@ -155,7 +155,10 @@ def get_main_maps(data: DotDict) -> PagerInfo:
             pages.append(error_page())
             print(e, file=sys.stderr)
 
-    return PagerInfo(pages, announcement)
+    if not pages:
+        return empty_embed('Map Schedule')
+    else:
+        return PagerInfo(pages, announcement)
 
 
 def get_sr_shifts(data: DotDict) -> PagerInfo:
@@ -218,7 +221,10 @@ def get_sr_shifts(data: DotDict) -> PagerInfo:
             pages.append(error_page())
             print(e, file=sys.stderr)
 
-    return PagerInfo(pages, announcement)
+    if not pages:
+        return empty_embed('Salmon Run Schedule')
+    else:
+        return PagerInfo(pages, announcement)
 
 
 def get_challenges(data: DotDict) -> PagerInfo:
@@ -282,7 +288,10 @@ def get_challenges(data: DotDict) -> PagerInfo:
             pages.append(error_page())
             print(e, file=sys.stderr)
 
-    return PagerInfo(pages, announcement)
+    if not pages:
+        return empty_embed('Challenge Schedule')
+    else:
+        return PagerInfo(pages, announcement)
 
 
 def get_eggstra_shifts(data: DotDict) -> PagerInfo:
