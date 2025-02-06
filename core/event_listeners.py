@@ -2,7 +2,7 @@ from discord.ext.commands import Cog
 from core.config import config
 
 
-class Listeners(Cog):
+class EventListeners(Cog):
     def __init__(self, bot):
         self.bot = bot
 

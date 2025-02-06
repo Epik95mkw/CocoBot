@@ -8,10 +8,9 @@ from discord.ext.commands.errors import CommandNotFound, NotOwner
 
 from core.commands import Commands
 from core.appcommands import AppCommands
-from core.listeners import Listeners
-from core.scheduled import ScheduledFunctions
+from core.event_listeners import EventListeners
+from core.scheduled_tasks import ScheduledTasks
 from core.config import config
-from core import functions as f
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -31,12 +30,12 @@ async def on_ready():
 
     await bot.add_cog(Commands(bot))
     await bot.add_cog(AppCommands(bot))
-    await bot.add_cog(Listeners(bot))
-    await bot.add_cog(ScheduledFunctions(bot))
+    await bot.add_cog(EventListeners(bot))
+    await bot.add_cog(ScheduledTasks(bot))
 
-    await f.update_maps(guilds)
-    await f.check_new_patch(guilds)
-    await f.update_gear(guilds)
+    await ScheduledTasks.update_map_embeds(bot.guilds)
+    await ScheduledTasks.update_shop_embeds(bot.guilds)
+    await ScheduledTasks.check_new_patch(bot.guilds)
 
     print(f'Connected: {datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S")}')
 

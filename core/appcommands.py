@@ -5,7 +5,7 @@ from discord.app_commands import command as slash_command
 
 from api import mapdata, patchnotes, shopdata, weapondata
 from core.config import config, Mode
-from core import functions as f
+from core.scheduled_tasks import ScheduledTasks
 from utils.dotdict import DotDict
 from utils.paginator import Paginator
 
@@ -33,8 +33,8 @@ class AppCommands(commands.GroupCog, group_name='admin'):
     @slash_command(name='update-maps')
     async def update_maps(self, interaction):
         """ Manually update map and shop embeds """
-        await f.update_maps(list(self.bot.guilds))
-        await f.update_gear(list(self.bot.guilds))
+        await ScheduledTasks.update_map_embeds(self.bot.guilds)
+        await ScheduledTasks.update_map_embeds(self.bot.guilds)
         await interaction.response.send_message('Updated map data', ephemeral=True)
 
 
@@ -44,8 +44,8 @@ class AppCommands(commands.GroupCog, group_name='admin'):
         for embed_name in config[interaction.guild.id].embeds:
             config[interaction.guild.id].embeds[embed_name].msg_id = ''
         config.update()
-        await f.update_maps(list(self.bot.guilds))
-        await f.update_gear(list(self.bot.guilds))
+        await ScheduledTasks.update_map_embeds(self.bot.guilds)
+        await ScheduledTasks.update_map_embeds(self.bot.guilds)
         await interaction.response.send_message('Reset map embeds', ephemeral=True)
 
 
