@@ -1,4 +1,4 @@
-from typing import TypedDict, Generic, TypeVar, Literal, Optional
+from typing import TypedDict, Literal, Optional
 
 from . import _util
 
@@ -19,9 +19,8 @@ class ModeData(TypedDict):
     rule: str
     id: str
 
-_T = TypeVar('_T')
-class NodeList(TypedDict, Generic[_T]):
-    nodes: list[_T]
+class NodeList[T](TypedDict):
+    nodes: list[T]
 
 
 # Models for normal rotation data
@@ -103,10 +102,9 @@ class SplatfestData(TypedDict):
     startTime: str
     endTime: str
     midtermTime: str
-    state: str
+    state: Literal['SCHEDULED', 'FIRST_HALF', 'SECOND_HALF']  # TODO: This is a guess, need confirmation
     teams: list[SplatfestTeam]
-    #TODO: This is probably different now
-    tricolorStage: TricolorMap
+    tricolorStage: TricolorMap  # TODO: This is probably different now
 
 
 # Models for salmon run data
