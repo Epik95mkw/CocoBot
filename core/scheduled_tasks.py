@@ -120,8 +120,8 @@ class ScheduledTasks(commands.Cog):
     @staticmethod
     async def check_new_patch(guilds: Iterable[discord.Guild], config: Config):
         """ Check if patch notes page has been updated. If so, send URL in patch notes channel """
-        version_number, version_text = patchnotes.latest()
-        if version_number is None:
+        patch_data = patchnotes.get()
+        if patch_data is None:
             return
 
         for guild in guilds:
@@ -129,7 +129,7 @@ class ScheduledTasks(commands.Cog):
             if not patch_channel:
                 continue
 
-            if config[guild.id]['latest_patch'] == version_number:
+            if config[guild.id]['latest_patch'] == patch_data.version:
                 # If latest version on patch notes page matches stored version, skip
                 continue
 
@@ -138,10 +138,10 @@ class ScheduledTasks(commands.Cog):
                 continue
 
             content = (
-                f'{guild.default_role} New patch notes: {version_text}\n'
+                f'{guild.default_role} New patch notes: {patch_data.version}\n'
                 f'{patchnotes.URL}'
             )
             await channel.send(content)
 
-            config[guild.id]['latest_patch'] = version_number
+            config[guild.id]['latest_patch'] = patch_data.version
         config.save()

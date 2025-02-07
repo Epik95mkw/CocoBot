@@ -1,34 +1,35 @@
+from dataclasses import dataclass
 import requests
 
 URL = 'https://en-americas-support.nintendo.com/app/answers/detail/a_id/59461/~/how-to-update-splatoon-3'
 
 
-def get():
-    """ Get HTML from patch notes page """
+@dataclass
+class PatchInfo:
+    version: str
+    text: str
+
+
+def get() -> PatchInfo | None:
+    """ Scrape patch notes page and return information on latest version """
     res = requests.get(URL)
     if not res.ok:
-        print(f'Failed to fetch data (response code {res.status_code}: {res.reason})')
-        return False
-    return res.text
+        print(f'Failed to fetch patch notes page (response code {res.status_code}: {res.reason})')
+        return None
+    html =  res.text
 
-
-def latest():
-    html = get()
-    if not html:
-        return None, None
-
-    updateline = ''
+    updateline = None
     for i, line in enumerate(html.splitlines()):
         if 'Latest update:' in line:
             updateline = line
             break
 
-    if not updateline:
-        return None, None
+    if updateline is None:
+        return None
 
     s = updateline.find(':') + 2
     e = updateline.rfind('<')
     vtext = updateline[s:e]
     vnum = vtext.split(' ')[1]
 
-    return vnum, vtext
+    return PatchInfo(vnum, vtext)

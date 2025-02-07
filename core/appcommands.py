@@ -152,7 +152,9 @@ class AppCommands(commands.GroupCog, group_name='admin'):
     async def set_patch_channel(self, interaction):
         """ Set patch notes announcements to this channel """
         self.config[interaction.guild.id]['channels']['patch'] = interaction.channel.id
-        self.config[interaction.guild.id]['latest_patch'] = patchnotes.latest()[0]
+        patch_data = patchnotes.get()
+        if patch_data is not None:
+            self.config[interaction.guild.id]['latest_patch'] = patch_data.version
         self.config.save()
         await interaction.response.send_message(
             f'Set patch announcements channel to {interaction.channel.jump_url}',
