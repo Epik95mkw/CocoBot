@@ -43,7 +43,7 @@ def scrape_wiki_page():
 data = globals().setdefault('data', scrape_wiki_page())
 
 
-def get_random(args: tuple[str]):
+def get_random(*args: str):
     if not args:
         weapons = [w['Main'] for w in data]
     else:

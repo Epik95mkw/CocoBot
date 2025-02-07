@@ -10,7 +10,7 @@ from core.commands import Commands
 from core.appcommands import AppCommands
 from core.event_listeners import EventListeners
 from core.scheduled_tasks import ScheduledTasks
-from core.config import config
+from core.config import Config
 
 load_dotenv()
 TOKEN = os.getenv('TOKEN')
@@ -22,20 +22,20 @@ bot = commands.Bot(
     help_command=None
 )
 
+config = Config(CONFIGPATH, bot)
 
 @bot.event
 async def on_ready():
-    guilds = list(bot.guilds)
-    config.load(CONFIGPATH, guilds)
+    config.load()
 
-    await bot.add_cog(Commands(bot))
-    await bot.add_cog(AppCommands(bot))
-    await bot.add_cog(EventListeners(bot))
-    await bot.add_cog(ScheduledTasks(bot))
+    await bot.add_cog(Commands(bot, config))
+    await bot.add_cog(AppCommands(bot, config))
+    await bot.add_cog(EventListeners(bot, config))
+    await bot.add_cog(ScheduledTasks(bot, config))
 
-    await ScheduledTasks.update_map_embeds(bot.guilds)
-    await ScheduledTasks.update_shop_embeds(bot.guilds)
-    await ScheduledTasks.check_new_patch(bot.guilds)
+    await ScheduledTasks.update_map_embeds(bot.guilds, config)
+    await ScheduledTasks.update_shop_embeds(bot.guilds, config)
+    await ScheduledTasks.check_new_patch(bot.guilds, config)
 
     print(f'Connected: {datetime.datetime.now().strftime("%m/%d/%Y %H:%M:%S")}')
 
@@ -44,7 +44,7 @@ async def on_ready():
 async def on_command_error(ctx: commands.Context, error):
     if isinstance(error, (CommandNotFound, NotOwner)):
         return
-    if debug_id := config[ctx.guild.id].channels.debug:
+    if debug_id := config[ctx.guild.id]['channels']['debug']:
         await ctx.guild.get_channel(debug_id).send(f'{error}')
     raise error
 
@@ -76,7 +76,7 @@ async def set_config(ctx: commands.Context):
         return
     await ctx.send(content='Old config:', file=discord.File(config.path))
     await ctx.message.attachments[0].save(fp=config.path)
-    config.load(CONFIGPATH)
+    config.load()
     await ctx.send('Successfully updated config')
 
 
