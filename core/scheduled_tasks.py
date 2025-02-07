@@ -9,6 +9,7 @@ from api import splatoon3ink, patchnotes
 from core import embeds
 from core.config import Config
 from utils.paginator import Paginator
+from utils.time_utils import to_timestamp, now
 
 class ScheduledTasks(commands.Cog):
     def __init__(self, bot: commands.Bot, config: Config):
@@ -40,6 +41,8 @@ class ScheduledTasks(commands.Cog):
         data = splatoon3ink.get_map_data()
         if data is None:
             return
+
+        await _handle_announcements(data, guilds, config)
 
         embed_map = {
             'main': embeds.create_maps_embed(data),
@@ -144,4 +147,82 @@ class ScheduledTasks(commands.Cog):
             await channel.send(content)
 
             config[guild.id]['latest_patch'] = patch_data.version
+
         config.save()
+
+
+MAX_ANNOUNCE_TIME = 600  # seconds
+
+async def _handle_announcements(
+    data: splatoon3ink.ScheduleData,
+    guilds: Iterable[discord.Guild],
+    config: Config
+):
+    announcements = []
+
+    fest = data['currentFest']
+    sr = data['coopGroupingSchedule']['regularSchedules']['nodes']
+    bigrun = data['coopGroupingSchedule']['bigRunSchedules']['nodes']
+    eggstra = data['coopGroupingSchedule']['teamContestSchedules']['nodes']
+    challenges = data['eventSchedules']['nodes']
+
+    if fest is not None:
+        fest_start = to_timestamp(fest['startTime'])
+        fest_start_msg = f'Splatfest has started: {fest['title']}'
+
+        fest_midterm = to_timestamp(fest['midtermTime'])
+        fest_midterm_msg = (
+            'Splatfest halftime: Tricolor battles are now available to play on '
+            + ' and '.join([stage['name'] for stage in fest['tricolorStages']])
+        )
+
+        announcements.extend([
+            (fest_start, fest_start_msg, 'everyone'),
+            (fest_midterm, fest_midterm_msg, 'everyone'),
+        ])
+
+    if sr and all(weapon['name'] == 'Random' for weapon in sr[0]['setting']['weapons']):
+        wildcard_start = to_timestamp(sr[0]['startTime'])
+        wildcard_msg = f'A wildcard shift on {sr[0]["setting"]["coopStage"]["name"]} has started.'
+        announcements.append(
+            (wildcard_start, wildcard_msg, 'sr')
+        )
+
+    if bigrun:
+        bigrun_start = to_timestamp(bigrun[0]['startTime'])
+        bigrun_msg = f'A Big Run on {bigrun[0]["setting"]["coopStage"]["name"]} has started.'
+        announcements.append(
+            (bigrun_start, bigrun_msg, 'sr')
+        )
+
+    if challenges:
+        challenge_start = to_timestamp(challenges[0]['timePeriods'][0]['startTime'])
+        challenges_msg = f'The {challenges[0]["leagueMatchSetting"]["leagueMatchEvent"]["name"]} event is now open.'
+        announcements.append(
+            (challenge_start, challenges_msg, 'main')
+        )
+
+    if eggstra:
+        eggstra_start = eggstra[0]['startTime']
+        eggstra_msg = f'Eggstra Work on {eggstra[0]["setting"]["coopStage"]["name"]} has started.'
+        announcements.append(
+            (eggstra_start, eggstra_msg, 'sr')
+        )
+
+    for guild in guilds:
+        channel = guild.get_channel(config[guild.id]['channels']['announcements'] or 0)
+        if channel is None:
+            continue
+
+        for timestamp, message, role_key in announcements:
+            if role_key == 'everyone':
+                message = f'{guild.default_role} {message}'
+            elif role_key is not None:
+                role_id = dict(config[guild.id]['roles'])[role_key]
+                if role_id is not None:
+                    role = guild.get_role(role_id)
+                    if role is not None:
+                        message = f'{role.mention} {message}'
+
+            if 0 < now() - timestamp < MAX_ANNOUNCE_TIME:
+                await channel.send(message)

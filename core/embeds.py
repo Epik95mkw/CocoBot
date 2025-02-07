@@ -1,9 +1,10 @@
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import TypedDict, NotRequired
 
 from api import splatoon3ink
 from api.splatoon3ink.schedules import TurfRotation, SalmonRunRotation, ChallengeEvent, SplatfestData
+from utils.time_utils import to_timestamp, now
 
 
 # Discord Embed objects, as defined by Discord API (not comprehensive)
@@ -28,19 +29,6 @@ class EmbedContent(TypedDict, total=False):
     fields: list[EmbedField]
 
 type PaginatorContent = list[EmbedContent]
-
-
-# Utility functions for handling datetimes
-
-def to_timestamp(dt: str) -> int:
-    """ Convert API datetime format to unix timestamp """
-    dt_utc = datetime.strptime(dt, '%Y-%m-%dT%H:%M:%SZ').replace(tzinfo=timezone.utc)
-    dt_local = dt_utc.astimezone(tz=None)  # Discord expects local time
-    return int(dt_local.timestamp())
-
-def now() -> int:
-    """ Return current time as Unix timestamp """
-    return int(datetime.now().timestamp())
 
 
 # Utility functions for creating generic embed components
@@ -219,7 +207,6 @@ def create_challenge_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
     if not data['eventSchedules']['nodes']:
         return [empty_page('Challenge Schedule')]
     pages = []
-    first_slot_start = None
 
     for i, node in enumerate[ChallengeEvent](data['eventSchedules']['nodes']):
         try:
@@ -228,8 +215,6 @@ def create_challenge_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
             for t in node['timePeriods']:
                 start = to_timestamp(t['startTime'])
                 end = to_timestamp(t['endTime'])
-                if first_slot_start is None:
-                    first_slot_start = start
                 if end < now():
                     continue
                 is_ongoing = is_ongoing or start <= now()

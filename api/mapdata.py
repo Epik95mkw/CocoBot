@@ -5,7 +5,7 @@ from attr import dataclass
 
 from core.config import Mode
 from utils.dotdict import DotDict
-import utils.time as time
+import utils.time_utils as time
 
 URL = 'https://splatoon3.ink/data/schedules.json'
 MAX_ANNOUNCE_TIME = 600
@@ -186,7 +186,7 @@ def get_sr_shifts(data: DotDict) -> PagerInfo:
 
             msg = ''
             if is_bigrun:
-                msg = f'A Big Run on {node.setting.coopStage.name} has begun!'
+                msg = f'A Big Run on {node.setting.coopStage.name} has started.'
             elif all(w.name == 'Random' for w in node.setting.weapons):
                 msg = f'A wildcard shift on {node.setting.coopStage.name} has started.'
 

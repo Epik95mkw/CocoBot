@@ -3,7 +3,7 @@ import sys
 import requests
 
 from utils.dotdict import DotDict
-import utils.time as time
+import utils.time_utils as time
 
 URL = 'https://splatoon3.ink/data/gear.json'
 MAX_ANNOUNCE_TIME = 600
