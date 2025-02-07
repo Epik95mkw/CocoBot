@@ -3,7 +3,8 @@ from datetime import datetime, timezone
 from typing import TypedDict, NotRequired
 
 from api import splatoon3ink
-from api.splatoon3ink.schedules import TurfRotation, SalmonRunRotation, ChallengeEvent
+from api.splatoon3ink.schedules import TurfRotation, SalmonRunRotation, ChallengeEvent, SplatfestData
+
 
 # Discord Embed objects, as defined by Discord API (not comprehensive)
 # https://discord.com/developers/docs/resources/message#embed-object-embed-structure
@@ -81,6 +82,7 @@ def create_maps_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
                 continue
             suffix = '(Current)' if i == 0 else '(Next)' if i == 1 else ''
 
+            current_fest: SplatfestData = data['currentFest']
             festmaps = data['festSchedules']['nodes'][i]['festMatchSettings']
 
             if festmaps is not None:
@@ -101,19 +103,22 @@ def create_maps_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
                     ] + ([
                         {
                             'name': f'Tricolor Turf War',
-                            'value': f'> {data["currentFest"]["tricolorStage"]["name"]}',
+                            'value': '\n'.join([f'> {stage["name"]}' for stage in current_fest['tricolorStages']]),
                             'inline': False
                         },
-                    ] if data['currentFest']['state'] == 'SECOND_HALF' else []),
+                    ] if current_fest['state'] == 'SECOND_HALF' else []),
                     'footer': updated_footer(),
                     'color': 0x16A80C
                 })
 
             else:
                 turf = data['regularSchedules']['nodes'][i]['regularMatchSetting']
-                rseries = data['bankaraSchedules']['nodes'][i]['bankaraMatchSettings'][0]
-                ropen = data['bankaraSchedules']['nodes'][i]['bankaraMatchSettings'][1]
+                anarchy = data['bankaraSchedules']['nodes'][i]['bankaraMatchSettings']
                 xrank = data['xSchedules']['nodes'][i]['xMatchSetting']
+
+                if turf is None or anarchy is None or xrank is None:
+                    pages.append(error_page())
+                    continue
 
                 pages.append({
                     'title': f'Map Schedule {suffix}\n'
@@ -125,13 +130,13 @@ def create_maps_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
                             'inline': False
                         },
                         {
-                            'name': f'Anarchy Series:  {rseries["vsRule"]["name"]}',
-                            'value': '\n'.join([f'> {stage["name"]}' for stage in rseries['vsStages']]),
+                            'name': f'Anarchy Series:  {anarchy[0]["vsRule"]["name"]}',
+                            'value': '\n'.join([f'> {stage["name"]}' for stage in anarchy[0]['vsStages']]),
                             'inline': True
                         },
                         {
-                            'name': f'Anarchy Open:  {ropen["vsRule"]["name"]}',
-                            'value': '\n'.join([f'> {stage["name"]}' for stage in ropen['vsStages']]),
+                            'name': f'Anarchy Open:  {anarchy[1]["vsRule"]["name"]}',
+                            'value': '\n'.join([f'> {stage["name"]}' for stage in anarchy[1]['vsStages']]),
                             'inline': False
                         },
                         {
@@ -155,9 +160,10 @@ def create_maps_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
 
 def create_sr_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent:
     """ Takes splatoon API data and returns the salmon run rotations embed """
-    allruns = \
-        data['coopGroupingSchedule']['regularSchedules']['nodes'] + \
+    allruns = (
+        data['coopGroupingSchedule']['regularSchedules']['nodes'] +
         data['coopGroupingSchedule']['bigRunSchedules']['nodes']
+    )
     if not allruns:
         return [empty_page('Salmon Run Schedule')]
     pages = []
@@ -276,7 +282,7 @@ def create_eggstra_embed(data: splatoon3ink.ScheduleData) -> PaginatorContent | 
         return None
     pages = []
 
-    for i, node in enumerate(nodes):
+    for i, node in enumerate[SalmonRunRotation](nodes):
         try:
             start = to_timestamp(node['startTime'])
             end = to_timestamp(node['endTime'])

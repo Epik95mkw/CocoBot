@@ -26,8 +26,8 @@ class NodeList[T](TypedDict):
 # Models for normal rotation data
 
 class MatchSetting(TypedDict):
-    __isVsSetting: str
     __typename: str
+    __isVsSetting: str
     vsStages: list[MapData]
     vsRule: ModeData
 
@@ -76,9 +76,11 @@ class ChallengeEvent(TypedDict):
 
 
 # Models for splatfest data
+class SplatfestMatchSetting(MatchSetting):
+    festMode: Literal['CHALLENGE', 'REGULAR']
 
 class SplatfestRotation(MapRotation):
-    festMatchSettings: Optional[MatchSetting]
+    festMatchSettings: Optional[list[SplatfestMatchSetting]]
 
 class SplatfestColor(TypedDict):
     a: float
@@ -104,7 +106,8 @@ class SplatfestData(TypedDict):
     midtermTime: str
     state: Literal['SCHEDULED', 'FIRST_HALF', 'SECOND_HALF']  # TODO: This is a guess, need confirmation
     teams: list[SplatfestTeam]
-    tricolorStage: TricolorMap  # TODO: This is probably different now
+    tricolorStages: list[TricolorMap]
+    timetable: None  # TODO: idk what this is
 
 
 # Models for salmon run data
