@@ -1,18 +1,9 @@
 import os
 import json
-from enum import Enum
 from io import TextIOWrapper
 from typing import Optional, TypedDict
 
 from discord.ext import commands
-
-
-# class Mode(Enum):
-#     """ Pseudo-enum that contains constants for each of the 4 gamemode types. """
-#     MAIN = 'main'
-#     SR = 'sr'
-#     CHALLENGE = 'challenge'
-#     EGGSTRA = 'eggstra'
 
 
 class ConfigRoles(TypedDict):
