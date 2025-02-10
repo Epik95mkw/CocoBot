@@ -1,6 +1,7 @@
 import datetime
 import sys
 import time
+from dataclasses import dataclass
 from typing import Iterable
 
 import discord
@@ -180,6 +181,12 @@ async def _handle_announcements(
     guilds: Iterable[discord.Guild],
     config: Config
 ):
+    @dataclass
+    class AnnouncementInfo:
+        timestamp: int
+        message: str
+        role_key: str
+
     announcements = []
 
     fest = data['currentFest']
@@ -199,8 +206,8 @@ async def _handle_announcements(
         )
 
         announcements.extend([
-            (fest_start, fest_start_msg, 'everyone'),
-            (fest_midterm, fest_midterm_msg, 'everyone'),
+            AnnouncementInfo(fest_start, fest_start_msg, 'everyone'),
+            AnnouncementInfo(fest_midterm, fest_midterm_msg, 'everyone'),
         ])
 
     if sr and all(weapon['name'] == 'Random' for weapon in sr[0]['setting']['weapons']):
