@@ -1,4 +1,5 @@
 import datetime
+import sys
 import time
 from typing import Iterable
 
@@ -42,7 +43,11 @@ class ScheduledTasks(commands.Cog):
         if data is None:
             return
 
-        await _handle_announcements(data, guilds, config)
+        try:
+            await _handle_announcements(data, guilds, config)
+        except Exception as e:
+            # TODO: debug message
+            print(f'Error handling announcements:\n{e}', file=sys.stderr)
 
         embed_map = {
             'main': embeds.create_maps_embed(data),
@@ -53,42 +58,48 @@ class ScheduledTasks(commands.Cog):
 
         for guild in guilds:
             for embed_key, embed_cfg in config[guild.id]['embeds']['schedules'].items():
-                embed_content = embed_map[embed_key]
-                if embed_cfg['ch_id'] is None:
-                    # Guild has no target channel set for this embed, so skip
+                try:
+                    embed_content = embed_map[embed_key]
+                    if embed_cfg['ch_id'] is None:
+                        # Guild has no target channel set for this embed, so skip
+                        continue
+
+                    channel = guild.get_channel(embed_cfg['ch_id'])
+                    if channel is None:
+                        # Target channel for this embed has been deleted, so skip
+                        embed_cfg['ch_id'] = None
+                        continue
+
+                    if embed_content is not None:
+                        # Embed exists and content exists, so updated embed
+                        pager = Paginator(embed_content)
+                        try:
+                            message = await channel.fetch_message(embed_cfg['msg_id'] or 0)
+                            await pager.update_message(message)
+                        except (discord.NotFound, discord.HTTPException):
+                            # Message containing this embed does not exist, so send new one
+                            await pager.send(channel)
+                            message = pager.message
+                        embed_cfg['msg_id'] = message.id
+
+                    elif embed_cfg['msg_id'] is not None:
+                        # Embed exists but content does not exist, so delete embed
+                        try:
+                            message = await channel.fetch_message(embed_cfg['msg_id'])
+                            await message.delete()
+                        except (discord.NotFound, discord.HTTPException):
+                            # Message containing this embed does not exist, so do nothing
+                            pass
+                        embed_cfg['msg_id'] = None
+
+                    time.sleep(0.1)  # Avoid rate limit
+
+                except Exception as e:
+                    print(f'Error updating [{embed_key}] embed in guild {guild.id}:\n{e}', file=sys.stderr)
                     continue
-
-                channel = guild.get_channel(embed_cfg['ch_id'])
-                if channel is None:
-                    # Target channel for this embed has been deleted, so skip
-                    embed_cfg['ch_id'] = None
-                    continue
-
-                if embed_content is not None:
-                    # Embed exists and content exists, so updated embed
-                    pager = Paginator(embed_content)
-                    try:
-                        message = await channel.fetch_message(embed_cfg['msg_id'] or 0)
-                        await pager.update_message(message)
-                    except (discord.NotFound, discord.HTTPException):
-                        # Message containing this embed does not exist, so send new one
-                        await pager.send(channel)
-                        message = pager.message
-                    embed_cfg['msg_id'] = message.id
-
-                elif embed_cfg['msg_id'] is not None:
-                    # Embed exists but content does not exist, so delete embed
-                    try:
-                        message = await channel.fetch_message(embed_cfg['msg_id'])
-                        await message.delete()
-                    except (discord.NotFound, discord.HTTPException):
-                        # Message containing this embed does not exist, so do nothing
-                        pass
-                    embed_cfg['msg_id'] = None
-
-                time.sleep(0.1)  # Avoid rate limit
 
         config.save()
+
 
     @staticmethod
     async def update_shop_embeds(guilds: Iterable[discord.Guild], config: Config):
@@ -101,24 +112,30 @@ class ScheduledTasks(commands.Cog):
         embed = discord.Embed.from_dict(embed_content)
 
         for guild in guilds:
-            embed_cfg = config[guild.id]['embeds']['gear']
-            if not embed_cfg:
-                continue
-            channel = guild.get_channel(embed_cfg['ch_id'])
-            if channel is None:
-                embed_cfg['ch_id'] = None
-                continue
-
             try:
-                message = await channel.fetch_message(embed_cfg['msg_id'] or 0)
-                await message.edit(embed=embed)
-            except (discord.NotFound, discord.HTTPException):
-                message = await channel.send(embed=embed)
-                embed_cfg['msg_id'] = message.id
+                embed_cfg = config[guild.id]['embeds']['gear']
+                if not embed_cfg:
+                    continue
+                channel = guild.get_channel(embed_cfg['ch_id'])
+                if channel is None:
+                    embed_cfg['ch_id'] = None
+                    continue
 
-            time.sleep(0.1)
+                try:
+                    message = await channel.fetch_message(embed_cfg['msg_id'] or 0)
+                    await message.edit(embed=embed)
+                except (discord.NotFound, discord.HTTPException):
+                    message = await channel.send(embed=embed)
+                    embed_cfg['msg_id'] = message.id
+
+                time.sleep(0.1)
+
+            except Exception as e:
+                print(f'Error updating [gear] embed in guild {guild.id}:\n{e}', file=sys.stderr)
+                continue
 
         config.save()
+
 
     @staticmethod
     async def check_new_patch(guilds: Iterable[discord.Guild], config: Config):
@@ -128,25 +145,30 @@ class ScheduledTasks(commands.Cog):
             return
 
         for guild in guilds:
-            patch_channel = config[guild.id]['channels']['patch']
-            if not patch_channel:
+            try:
+                patch_channel = config[guild.id]['channels']['patch']
+                if not patch_channel:
+                    continue
+
+                if config[guild.id]['latest_patch'] == patch_data.version:
+                    # If latest version on patch notes page matches stored version, skip
+                    continue
+
+                channel = guild.get_channel(patch_channel)
+                if channel is None:
+                    continue
+
+                content = (
+                    f'{guild.default_role} New patch notes: {patch_data.version}\n'
+                    f'{patchnotes.URL}'
+                )
+                await channel.send(content)
+
+                config[guild.id]['latest_patch'] = patch_data.version
+
+            except Exception as e:
+                print(f'Error checking patch notes in guild {guild.id}:\n{e}', file=sys.stderr)
                 continue
-
-            if config[guild.id]['latest_patch'] == patch_data.version:
-                # If latest version on patch notes page matches stored version, skip
-                continue
-
-            channel = guild.get_channel(patch_channel)
-            if channel is None:
-                continue
-
-            content = (
-                f'{guild.default_role} New patch notes: {patch_data.version}\n'
-                f'{patchnotes.URL}'
-            )
-            await channel.send(content)
-
-            config[guild.id]['latest_patch'] = patch_data.version
 
         config.save()
 
