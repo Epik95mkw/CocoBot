@@ -225,7 +225,7 @@ async def _handle_announcements(
         )
 
     if eggstra:
-        eggstra_start = eggstra[0]['startTime']
+        eggstra_start = to_timestamp(eggstra[0]['startTime'])
         eggstra_msg = f'Eggstra Work on {eggstra[0]["setting"]["coopStage"]["name"]} has started.'
         announcements.append(
             (eggstra_start, eggstra_msg, 'sr')
