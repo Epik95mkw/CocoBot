@@ -51,6 +51,12 @@ class AppCommands(commands.GroupCog, group_name='admin'):
         await interaction.response.send_message('Reset map embeds', ephemeral=True)
 
 
+    @slash_command(name='check-patch')
+    async def check_patch(self, interaction):
+        await ScheduledTasks.check_new_patch(self.bot.guilds, self.config)
+        await interaction.response.send_message('Updated patch data', ephemeral=True)
+
+
     @slash_command(name='set-debug-channel')
     async def set_debug_channel(self, interaction):
         """ Set channel for bot errors and debug info """
