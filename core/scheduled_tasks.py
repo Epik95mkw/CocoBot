@@ -31,7 +31,7 @@ class ScheduledTasks(commands.Cog):
         await self.update_map_embeds(self.bot.guilds, self.config)
         await self.update_shop_embeds(self.bot.guilds, self.config)
 
-    @tasks.loop(time=[datetime.time(hour=h, minute=m, second=30) for h in (23, 0, 1) for m in range(0, 10)])
+    @tasks.loop(time=[datetime.time(hour=h, minute=m, second=30) for h in (0, 1, 2) for m in range(0, 10)])
     async def on_check_patch(self):
         """ Runs every minute for 10 minutes at 7pm, 8pm, and 9pm EST """
         await self.check_new_patch(self.bot.guilds, self.config)
