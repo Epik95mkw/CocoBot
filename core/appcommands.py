@@ -53,6 +53,7 @@ class AppCommands(commands.GroupCog, group_name='admin'):
 
     @slash_command(name='check-patch')
     async def check_patch(self, interaction):
+        """ Manually check for new patch notes """
         await ScheduledTasks.check_new_patch(self.bot.guilds, self.config)
         await interaction.response.send_message('Updated patch data', ephemeral=True)
 
