@@ -51,7 +51,7 @@ class GuildConfig(TypedDict):
     latest_patch: Optional[str]
 
 
-TEMPLATE: GuildConfig = {
+GUILD_TEMPLATE: GuildConfig = {
     "perms": [],
     "roles": {
         "main": None,
@@ -82,19 +82,31 @@ class Config:
         self.path = os.path.join(os.path.dirname(__file__), f'..{path}')
         self._bot = bot
         self._config = {}
+        self._loaded = False
+
+    def _assert_loaded(self):
+        if not self._loaded:
+            raise NotImplementedError(
+                'Config must be initialized using `load()` before calling this function'
+            )
 
     def __repr__(self):
         return str(self._config)
 
     def __getitem__(self, guild_id: int) -> GuildConfig:
+        """ Get server-specific config by guild ID """
+        self._assert_loaded()
         return self._config[guild_id]
 
     def save(self):
+        """ Save current config state to JSON file """
+        self._assert_loaded()
         with open(self.path, 'w') as f:  # type: TextIOWrapper[str]
             json.dump(self._config, f, indent=2)
         return True
 
     def load(self):
+        """ Load config state stored in JSON file """
         if not os.path.isfile(self.path):
             # If config file doesn't exist, create it
             open(self.path, 'x').close()
@@ -107,74 +119,12 @@ class Config:
 
         # Create GuildConfigs for any servers missing from config file
         for guild in self._bot.guilds:
-            self._config.setdefault(guild.id, TEMPLATE)
+            self._config.setdefault(guild.id, GUILD_TEMPLATE)
 
+        self._loaded = True
         self.save()
 
     def clear_guild(self, guild_id: int):
         """ Clear all data for specified guild """
-        self._config[guild_id] = TEMPLATE
-
-
-
-
-
-# class BotConfig:
-#     path: str
-#     data = {}  # shared by all instances
-#     loaded = False
-#
-#     def load(self, path: str, guilds=()):
-#         """ Loads config from specified JSON file """
-#         self.path = os.path.join(os.path.dirname(__file__),  f'..{path}')
-#
-#         if not os.path.isfile(self.path):
-#             open(self.path, 'x').close()
-#         else:
-#             with open(self.path, 'r') as f:
-#                 configjson = json.load(f)
-#             for k, v in configjson.items():
-#                 self.data[int(k)] = DotDict(v)
-#
-#         for guild in guilds:
-#             self.data.setdefault(guild.id, DotDict(TEMPLATE))
-#
-#         self.update()
-#         self.loaded = True
-#
-#     def __bool__(self):
-#         return self.loaded
-#
-#     def __getitem__(self, key: int):
-#         return self.data[key]
-#
-#     @property
-#     def guild_ids(self) -> list[int]:
-#         return list(self.data.keys())
-#
-#     def update(self):
-#         """ Write current state to JSON file """
-#         as_dict = self.data  # {gid: gcfg.data for gid, gcfg in self.data}
-#         pretty = json.dumps(as_dict, indent=2)
-#         with open(self.path, 'w') as f:
-#             f.write(pretty)
-#         return True
-#
-#     def delete(self, guild):
-#         """ Clear all data for specified guild """
-#         self.data[guild.id] = DotDict(TEMPLATE)
-
-
-"""
-{ (GUILD ID): Template }\n
-Template:\n
-perms: [ role IDs ]\n
-roles: { main, sr, events } (role ID)\n
-channels: {\n
-. . debug, announcement, patch: { ch_id, last: str }\n
-} (channel ID)\n
-embeds: {\n
-. . main, sr, challenge, eggstra, gear\n
-} ({ ch_id, msg_id })\n
-reactions: [{ msg_id, emoji, role_id }]\n
-"""
+        self._assert_loaded()
+        self._config[guild_id] = GUILD_TEMPLATE
