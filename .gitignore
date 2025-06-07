@@ -7,6 +7,7 @@
 /sample_data
 /tests
 config.json
+maplist.json
 
 Dockerfile
 .dockerignore

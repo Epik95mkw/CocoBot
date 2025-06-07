@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands.errors import CommandNotFound, NotOwner
 
+from api import maplist
 from core.commands import Commands
 from core.appcommands import AppCommands
 from core.event_listeners import EventListeners
@@ -78,6 +79,26 @@ async def set_config(ctx: commands.Context):
     await ctx.message.attachments[0].save(fp=config.path)
     config.load()
     await ctx.send('Successfully updated config')
+
+
+@bot.command(name='get-maplist')
+@commands.is_owner()
+async def get_config(ctx: commands.Context):
+    """ Only bot owner can use. Send maplist.json file. """
+    await ctx.send(file=discord.File(maplist.path))
+
+
+@bot.command(name='set-maplist')
+@commands.is_owner()
+async def set_config(ctx: commands.Context):
+    """ Only bot owner can use. Overwrite maplist.json with given file. """
+    if not ctx.message.attachments:
+        await ctx.send('Missing attachment')
+        return
+    await ctx.send(content='Old maplist:', file=discord.File(maplist.path))
+    await ctx.message.attachments[0].save(fp=maplist.path)
+    maplist.reload()
+    await ctx.send('Successfully updated maplist')
 
 
 if __name__ == '__main__':
