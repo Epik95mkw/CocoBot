@@ -15,8 +15,16 @@ class EmbedField(TypedDict):
     value: str
     inline: NotRequired[bool]
 
+class EmbedMedia(TypedDict):
+    url: str
+    proxy_url: NotRequired[str]
+    height: NotRequired[int]
+    width: NotRequired[int]
+
 class EmbedFooter(TypedDict):
     text: str
+    icon_url: NotRequired[str]
+    proxy_icon_url: NotRequired[str]
 
 class EmbedContent(TypedDict, total=False):
     title: str
@@ -26,6 +34,9 @@ class EmbedContent(TypedDict, total=False):
     timestamp: int
     color: int
     footer: EmbedFooter
+    image: EmbedMedia
+    thumbnail: EmbedMedia
+    video: EmbedMedia
     fields: list[EmbedField]
 
 type PaginatorContent = list[EmbedContent]
