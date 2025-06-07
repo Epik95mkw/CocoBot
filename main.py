@@ -95,7 +95,7 @@ async def set_config(ctx: commands.Context):
     if not ctx.message.attachments:
         await ctx.send('Missing attachment')
         return
-    await ctx.send(content='Old maplist:', file=discord.File(maplist.path))
+    # await ctx.send(content='Old maplist:', file=discord.File(maplist.path))
     await ctx.message.attachments[0].save(fp=maplist.path)
     maplist.reload()
     await ctx.send('Successfully updated maplist')
