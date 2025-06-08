@@ -11,7 +11,7 @@ class Commands(commands.Cog):
     def __init__(self, bot: commands.Bot, config: Config):
         self.bot = bot
         self.config = config
-        self.maplist = None
+        self.rmap_memory = []
 
 
     @command(name='randomweapon', aliases=['rw'])
@@ -26,20 +26,42 @@ class Commands(commands.Cog):
     @command(name='randommap', aliases=['rmap'])
     async def random_map(self, ctx, *args: str):
         args = [a.upper() for a in args]
-        map_list = maplist.get()
-
-        if map_list is None:
-            await ctx.send('Error: Maplist not found')
-            return
-        elif 'ALL' in args:
-            allowed_maps = map_list['legal'] + map_list['banned']
-        else:
-            allowed_maps = map_list['legal']
+        filter_by = []
+        allow_banned = False
+        no_repeats = False
 
         while args:
             a = args.pop()
             if a in ('SZ', 'TC', 'RM', 'CB'):
-                allowed_maps = [m for m in allowed_maps if m.startswith(a)]
-                break
+                filter_by.append(a)
+            elif a == 'ALL':
+                allow_banned = True
+            elif a == 'NO-REPEAT':
+                no_repeats = True
+            elif a == 'RESET':
+                no_repeats = False
+                self.rmap_memory.clear()
+
+        map_list = maplist.get()
+        if map_list is None:
+            await ctx.send('Error: Maplist not found', reference=ctx.message, mention_author=False)
+            return
+        else:
+            allowed_maps = map_list['legal']
+
+        if allow_banned:
+            allowed_maps += map_list['banned']
+        if filter_by:
+            allowed_maps = [m for m in allowed_maps if m[0:2] in filter_by]
+        if no_repeats or self.rmap_memory:
+            allowed_maps = [m for m in allowed_maps if m not in self.rmap_memory]
+
+        if not allowed_maps:
+            await ctx.send('No more maps available!', reference=ctx.message, mention_author=False)
+
         choice = random.choice(allowed_maps)
-        await ctx.send(choice, reference=ctx.message, mention_author=False)
+        message = choice
+        if no_repeats or self.rmap_memory:
+            self.rmap_memory.append(choice)
+            message += '\n-# no-repeat: ON'
+        await ctx.send(message, reference=ctx.message, mention_author=False)
