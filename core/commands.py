@@ -58,6 +58,7 @@ class Commands(commands.Cog):
 
         if not allowed_maps:
             await ctx.send('No more maps available!', reference=ctx.message, mention_author=False)
+            return
 
         choice = random.choice(allowed_maps)
         message = choice
